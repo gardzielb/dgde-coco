@@ -14,5 +14,5 @@ Diversity Guided Differential Evolution compared with classic DE using `coco` fr
 In project root directory run
 ```
 poetry install
-poetry run <path to coco>/do.py run-python
+poetry run python <path to coco>/do.py run-python
 ```
