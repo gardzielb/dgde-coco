@@ -1,8 +1,10 @@
 import math
+
 import numpy as np
 
+
 class DES:
-	def do(self, pop, n_select, **kwargs):
+	def do(self, pop: np.ndarray, n_select):
 		# number of random individuals needed
 		n_random = n_select * 3
 

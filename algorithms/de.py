@@ -1,6 +1,3 @@
-# =========================================================================================================
-# Implementation
-# =========================================================================================================
 import random
 from typing import Callable
 
@@ -50,7 +47,7 @@ class DE:
 
 		self.pop_size = pop_size
 		self.n_offsprings = n_offsprings
-		self.population_metadata = dict[str, np.ndarray]()
+
 		self.prev_pop_f = np.full((pop_size,), np.inf, dtype = float)
 
 		for i in range(len(self.pop)):
@@ -86,7 +83,8 @@ class DE:
 		I = np.argsort(self.prev_pop_f)
 		return I
 
-	def __succession(self, problem: cocoex.Problem | Callable[[np.ndarray], float], pop: np.ndarray, infills: np.ndarray):
+	def __succession(self, problem: cocoex.Problem | Callable[[np.ndarray], float], pop: np.ndarray,
+					 infills: np.ndarray):
 		n = len(pop)
 		ret = np.full((n, 1), False)
 		off_f = np.full((n,), np.inf, dtype = float)

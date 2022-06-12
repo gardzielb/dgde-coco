@@ -19,6 +19,7 @@ def de_differential(X, F):
 
 	return Xp
 
+
 class DEX:
 	def __init__(self,
 				 F = 0.8,
