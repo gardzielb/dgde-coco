@@ -11,7 +11,7 @@ def minimize(problem: cocoex.Problem, x0: np.ndarray | None = None, pop_size: in
 		xu = problem.upper_bounds
 		x0 = sampling_lhs(pop_size, problem.dimension, xl, xu)
 
-	pop_size = 100
+	pop_size = len(x0)
 	de = DE(problem, pop_size, initial_population = x0)
 
 	gen_count = 0

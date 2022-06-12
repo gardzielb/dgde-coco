@@ -72,17 +72,6 @@ class DE:
 		# replace the individuals with the corresponding parents from the mating
 		self.pop = self.__succession(self.problem, self.pop, infills)
 
-		# sort the population by fitness to make the selection simpler for mating (not an actual survival, just sorting)
-		I = self.__fitness_survival(self.pop)
-		self.pop = self.pop[I]
-		self.prev_pop_f = self.prev_pop_f[I]
-
-	def __fitness_survival(self, pop):
-		if len(pop) == 0:
-			return pop
-		I = np.argsort(self.prev_pop_f)
-		return I
-
 	def __succession(self, problem: cocoex.Problem | Callable[[np.ndarray], float], pop: np.ndarray,
 					 infills: np.ndarray):
 		n = len(pop)

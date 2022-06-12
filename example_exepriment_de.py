@@ -23,7 +23,7 @@ for problem in suite:  # this loop will take several minutes or longer
     # apply restarts while neither the problem is solved nor the budget is exhausted
     while (problem.evaluations < problem.dimension * budget_multiplier
            and not problem.final_target_hit):
-        minimize(problem)
+        minimize(problem, gen_limit = 1000, pop_size = 100)
     minimal_print(problem, final=problem.index == len(suite) - 1)
 
 ### post-process data
