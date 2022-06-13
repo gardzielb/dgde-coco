@@ -1,6 +1,5 @@
 import cocoex
 import numpy as np
-import tkinter
 from algorithms.de import DE
 from algorithms.population_init import sampling_lhs
 

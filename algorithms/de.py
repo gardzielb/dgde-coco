@@ -4,16 +4,14 @@ from typing import Callable
 import cocoex
 import numpy as np
 
-from algorithms.des import DES
-from algorithms.dex import DEX
+from algorithms.des import differential_selection
+from algorithms.dex import differential_crossover_and_mutation
 
 
 class DE:
-
 	def __init__(self,
 				 problem: cocoex.Problem | Callable[[np.ndarray], float],
 				 pop_size = 100,
-				 n_offsprings = None,
 				 CR = 0.5,
 				 F = 0.9,
 				 initial_population: np.ndarray | None = None,
@@ -32,12 +30,8 @@ class DE:
 
 		self.pop = initial_population
 		self.problem = problem
-		self.selection = DES()
-
-		self.crossover = DEX(F = F,
-							 CR = CR,
-							 at_least_once = False)
-
+		self.F = F
+		self.CR = CR
 		self.seed = seed
 		if self.seed is None:
 			self.seed = np.random.randint(0, 10000000)
@@ -46,8 +40,6 @@ class DE:
 		np.random.seed(self.seed)
 
 		self.pop_size = pop_size
-		self.n_offsprings = n_offsprings
-
 		self.prev_pop_f = np.full((pop_size,), np.inf, dtype = float)
 
 		for i in range(len(self.pop)):
@@ -59,10 +51,10 @@ class DE:
 
 		# this return an array of 3-tuples of indexes j, k, l that will take part in differential mutation
 		# p_j + F*(p_k-p_l)
-		parents = self.selection.do(self.pop, n_select)
+		parents = differential_selection(self.pop, n_select)
 
 		# do the mutation and crossover using the parents index and the population array
-		infills = self.crossover.do(self.pop, parents)
+		infills = differential_crossover_and_mutation(self.pop, parents, self.F, self.CR, at_least_once = False)
 
 		return infills
 

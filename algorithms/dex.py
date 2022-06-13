@@ -1,9 +1,6 @@
 import numpy as np
 
-from algorithms.binx import binomial_crossover
-
-
-def de_differential(X, F):
+def _differential_mutation(X, F):
 	n_parents, n_matings, n_var = X.shape
 	assert n_parents % 2 == 1, "For the differential an odd number of values need to be provided"
 
@@ -20,32 +17,37 @@ def de_differential(X, F):
 	return Xp
 
 
-class DEX:
-	def __init__(self,
-				 F = 0.8,
-				 CR = 0.9,
-				 n_iter = 1,
-				 at_least_once = True):
-		self.F = F
-		self.CR = CR
-		self.at_least_once = at_least_once
-		self.n_iter = n_iter
+def differential_crossover_and_mutation(pop, parents, F = 0.8, CR = 0.9, at_least_once = True):
+	X = pop[parents.T].copy()
+	assert len(X.shape) == 3, "Please provide a three-dimensional matrix n_parents x pop_size x n_vars."
 
-	def do(self, pop, parents):
-		X = pop[parents.T].copy()
-		assert len(X.shape) == 3, "Please provide a three-dimensional matrix n_parents x pop_size x n_vars."
+	_, n_matings, n_var = X.shape
 
-		_, n_matings, n_var = X.shape
+	# prepare the out to be set
+	Xp = _differential_mutation(X, F)
 
-		# prepare the out to be set
-		Xp = de_differential(X, self.F)
+	M = _binomial_crossover(n_matings, n_var, CR, at_least_once = at_least_once)
 
-		M = binomial_crossover(n_matings, n_var, self.CR, at_least_once = self.at_least_once)
+	# take the first parents (this is already a copy)
+	X = X[0]
 
-		# take the first parents (this is already a copy)
-		X = X[0]
+	# set the corresponding values from the donor vector
+	X[M] = Xp[M]
 
-		# set the corresponding values from the donor vector
-		X[M] = Xp[M]
+	return X
 
-		return X
+
+def _row_at_least_once_true(M):
+	_, d = M.shape
+	for k in np.where(~np.any(M, axis = 1))[0]:
+		M[k, np.random.randint(d)] = True
+	return M
+
+
+def _binomial_crossover(n, m, prob, at_least_once = True):
+	M = np.random.random((n, m)) < prob
+
+	if at_least_once:
+		M = _row_at_least_once_true(M)
+
+	return M
