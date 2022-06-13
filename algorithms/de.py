@@ -6,6 +6,7 @@ import numpy as np
 
 from algorithms.des import differential_selection
 from algorithms.dex import differential_crossover_and_mutation
+from algorithms.dg import DGMode
 
 
 class DE:
@@ -15,7 +16,8 @@ class DE:
 				 CR = 0.5,
 				 F = 0.9,
 				 initial_population: np.ndarray | None = None,
-				 seed = None
+				 seed = None,
+				 use_diversity_guided = False
 				 ):
 		"""
 		Parameters
@@ -41,6 +43,7 @@ class DE:
 
 		self.pop_size = pop_size
 		self.prev_pop_f = np.full((pop_size,), np.inf, dtype = float)
+		self.dg_mode = DGMode.EXPLOIT if use_diversity_guided else DGMode.NONE
 
 		for i in range(len(self.pop)):
 			self.prev_pop_f[i] = self.problem(self.pop[i])
@@ -49,12 +52,14 @@ class DE:
 		# how many parents need to be select for the mating - depending on number of offsprings remaining
 		n_select = len(self.pop)
 
-		# this return an array of 3-tuples of indexes j, k, l that will take part in differential mutation
+		# this return an array of 3-tuples of indexes j, k, l that will later take part in differential mutation
 		# p_j + F*(p_k-p_l)
 		parents = differential_selection(self.pop, n_select)
 
 		# do the mutation and crossover using the parents index and the population array
-		infills = differential_crossover_and_mutation(self.pop, parents, self.F, self.CR, at_least_once = False)
+		infills = differential_crossover_and_mutation(self.pop, parents, self.F, self.CR, self.dg_mode,
+													  self.problem.lower_bounds, self.problem.upper_bounds,
+													  at_least_once = False)
 
 		return infills
 

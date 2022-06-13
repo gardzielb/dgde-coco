@@ -1,5 +1,8 @@
 import numpy as np
 
+from algorithms.dg import calculate_diversity, DGMode
+
+
 def _differential_mutation(X, F):
 	n_parents, n_matings, n_var = X.shape
 	assert n_parents % 2 == 1, "For the differential an odd number of values need to be provided"
@@ -17,14 +20,41 @@ def _differential_mutation(X, F):
 	return Xp
 
 
-def differential_crossover_and_mutation(pop, parents, F = 0.8, CR = 0.9, at_least_once = True):
+def _dg_mutation(X, F, mode: DGMode, diversity):
+	n_parents, n_matings, n_var = X.shape
+	assert n_parents % 2 == 1, "For the differential an odd number of values need to be provided"
+
+	# make sure F is a one-dimensional vector
+	F = np.ones(n_matings) * F
+
+	# the differentials from substraction the selected each pair
+	diffs1 = np.zeros((n_matings, n_var))
+	diffs2 = np.zeros((n_matings, n_var))
+
+	diffs1 += F[:, None] * (X[1] - X[2])
+	diffs2 += F[:, None] * (X[2] - X[1])
+
+	# TODO: do something with those diffs
+
+	# now add the differentials to the first parent
+	# Xp = X[0] + diffs1
+
+	# return Xp
+
+
+def differential_crossover_and_mutation(pop, parents, F, CR, dg_mode: DGMode, lower_bound, upper_bound,
+										at_least_once = True):
 	X = pop[parents.T].copy()
 	assert len(X.shape) == 3, "Please provide a three-dimensional matrix n_parents x pop_size x n_vars."
 
 	_, n_matings, n_var = X.shape
 
-	# prepare the out to be set
-	Xp = _differential_mutation(X, F)
+	if dg_mode is not DGMode.NONE:
+		diversity = calculate_diversity(pop, lower_bound, upper_bound)
+		Xp = _dg_mutation(X, F, dg_mode, diversity)
+	else:
+		# prepare the out to be set
+		Xp = _differential_mutation(X, F)
 
 	M = _binomial_crossover(n_matings, n_var, CR, at_least_once = at_least_once)
 
