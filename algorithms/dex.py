@@ -1,6 +1,6 @@
 import numpy as np
 
-from algorithms.dg import calculate_diversity, DGMode
+from algorithms.dg import DGMode, DGController
 
 
 def _differential_mutation(X, F):
@@ -11,8 +11,7 @@ def _differential_mutation(X, F):
 	F = np.ones(n_matings) * F
 
 	# the differentials from substraction the selected each pair
-	diffs = np.zeros((n_matings, n_var))
-	diffs += F[:, None] * (X[1] - X[2])
+	diffs = F[:, None] * (X[1] - X[2])
 
 	# now add the differentials to the first parent
 	Xp = X[0] + diffs
@@ -20,7 +19,7 @@ def _differential_mutation(X, F):
 	return Xp
 
 
-def _dg_mutation(X, F, mode: DGMode, diversity):
+def _dg_mutation(X, F, pop_mean: np.ndarray, dg_mode: DGMode):
 	n_parents, n_matings, n_var = X.shape
 	assert n_parents % 2 == 1, "For the differential an odd number of values need to be provided"
 
@@ -28,30 +27,29 @@ def _dg_mutation(X, F, mode: DGMode, diversity):
 	F = np.ones(n_matings) * F
 
 	# the differentials from substraction the selected each pair
-	diffs1 = np.zeros((n_matings, n_var))
-	diffs2 = np.zeros((n_matings, n_var))
+	result1 = X[0] + F[:, None] * (X[1] - X[2])
+	result2 = X[1] + F[:, None] * (X[2] - X[1])
 
-	diffs1 += F[:, None] * (X[1] - X[2])
-	diffs2 += F[:, None] * (X[2] - X[1])
+	dist_to_mid_1 = np.sum((result1 - pop_mean) ** 2, axis = 1)[:, None]
+	dist_to_mid_2 = np.sum((result2 - pop_mean) ** 2, axis = 1)[:, None]
 
-	# TODO: do something with those diffs
+	choice1 = dist_to_mid_1 < dist_to_mid_2 if dg_mode == DGMode.EXPLOIT else dist_to_mid_1 < dist_to_mid_2
+	choice2 = choice1 != True
 
-	# now add the differentials to the first parent
-	# Xp = X[0] + diffs1
-
-	# return Xp
+	result = np.select([choice1, choice2], [result1, result2])
+	return result
 
 
-def differential_crossover_and_mutation(pop, parents, F, CR, dg_mode: DGMode, lower_bound, upper_bound,
+def differential_crossover_and_mutation(pop, parents, F, CR, dg_controller: DGController, lower_bound, upper_bound,
 										at_least_once = True):
 	X = pop[parents.T].copy()
 	assert len(X.shape) == 3, "Please provide a three-dimensional matrix n_parents x pop_size x n_vars."
 
 	_, n_matings, n_var = X.shape
 
-	if dg_mode is not DGMode.NONE:
-		diversity = calculate_diversity(pop, lower_bound, upper_bound)
-		Xp = _dg_mutation(X, F, dg_mode, diversity)
+	if dg_controller:
+		dg_mode = dg_controller.calculate_mode(pop, upper_bound, lower_bound)
+		Xp = _dg_mutation(X, F, dg_controller.pop_mean, dg_mode)
 	else:
 		# prepare the out to be set
 		Xp = _differential_mutation(X, F)

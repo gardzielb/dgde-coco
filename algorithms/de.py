@@ -1,14 +1,15 @@
 import random
-from typing import Callable
+from typing import Callable, Optional
 
 import cocoex
 import numpy as np
 
 from algorithms.des import differential_selection
 from algorithms.dex import differential_crossover_and_mutation
-from algorithms.dg import DGMode
+from algorithms.dg import DGController
 
 
+# noinspection PyPep8Naming
 class DE:
 	def __init__(self,
 				 problem: cocoex.Problem | Callable[[np.ndarray], float],
@@ -17,7 +18,7 @@ class DE:
 				 F = 0.9,
 				 initial_population: np.ndarray | None = None,
 				 seed = None,
-				 use_diversity_guided = False
+				 dg_controller: Optional[DGController] = None
 				 ):
 		"""
 		Parameters
@@ -43,10 +44,11 @@ class DE:
 
 		self.pop_size = pop_size
 		self.prev_pop_f = np.full((pop_size,), np.inf, dtype = float)
-		self.dg_mode = DGMode.EXPLOIT if use_diversity_guided else DGMode.NONE
 
 		for i in range(len(self.pop)):
 			self.prev_pop_f[i] = self.problem(self.pop[i])
+
+		self.dg_controller = dg_controller
 
 	def infill(self):
 		# how many parents need to be select for the mating - depending on number of offsprings remaining
@@ -57,7 +59,7 @@ class DE:
 		parents = differential_selection(self.pop, n_select)
 
 		# do the mutation and crossover using the parents index and the population array
-		infills = differential_crossover_and_mutation(self.pop, parents, self.F, self.CR, self.dg_mode,
+		infills = differential_crossover_and_mutation(self.pop, parents, self.F, self.CR, self.dg_controller,
 													  self.problem.lower_bounds, self.problem.upper_bounds,
 													  at_least_once = False)
 

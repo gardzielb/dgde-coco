@@ -1,6 +1,7 @@
 import cocoex
 import numpy as np
 from algorithms.de import DE
+from algorithms.dg import DGController
 from algorithms.population_init import sampling_lhs
 
 
@@ -11,7 +12,7 @@ def minimize(problem: cocoex.Problem, x0: np.ndarray | None = None, pop_size: in
 		x0 = sampling_lhs(pop_size, problem.dimension, xl, xu)
 
 	pop_size = len(x0)
-	de = DE(problem, pop_size, initial_population = x0)
+	de = DE(problem, pop_size, initial_population = x0, dg_controller = DGController(div_low = 0.2, div_high = 0.8))
 
 	gen_count = 0
 	while gen_count < gen_limit:
