@@ -11,6 +11,7 @@ class DGMode(Enum):
 
 class DGController:
 	def __init__(self, div_low: float, div_high: float):
+		assert div_low <= div_high, "div_low must not be greater than div_high"
 		self.div_low = div_low
 		self.div_high = div_high
 		self.mode = DGMode.EXPLOIT

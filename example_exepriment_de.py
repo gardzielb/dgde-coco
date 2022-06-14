@@ -29,4 +29,3 @@ for problem in suite:  # this loop will take several minutes or longer
 ### post-process data
 cocopp.main(observer.result_folder)  # re-run folders look like "...-001" etc
 webbrowser.open("file://" + os.getcwd() + "/ppdata/index.html")
-

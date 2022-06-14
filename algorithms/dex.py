@@ -23,13 +23,13 @@ def _dg_mutation(X, F, pop_mean: np.ndarray, dg_mode: DGMode):
 
 	# calculate results of differential mutation for both diff options
 	result1 = X[0] + F[:, None] * (X[1] - X[2])
-	result2 = X[1] + F[:, None] * (X[2] - X[1])
+	result2 = X[0] + F[:, None] * (X[2] - X[1])
 
 	dist_to_mean_1 = np.sum((result1 - pop_mean) ** 2, axis = 1)[:, None]
 	dist_to_mean_2 = np.sum((result2 - pop_mean) ** 2, axis = 1)[:, None]
 
 	# select mutation result according to current DG mode
-	choose1 = dist_to_mean_1 < dist_to_mean_2 if dg_mode == DGMode.EXPLOIT else dist_to_mean_1 < dist_to_mean_2
+	choose1 = dist_to_mean_1 < dist_to_mean_2 if dg_mode == DGMode.EXPLOIT else dist_to_mean_1 > dist_to_mean_2
 	return np.select([choose1, choose1 == False], [result1, result2])
 
 
