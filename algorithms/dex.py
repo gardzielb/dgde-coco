@@ -10,13 +10,8 @@ def _differential_mutation(X, F):
 	# make sure F is a one-dimensional vector
 	F = np.ones(n_matings) * F
 
-	# the differentials from substraction the selected each pair
-	diffs = F[:, None] * (X[1] - X[2])
-
-	# now add the differentials to the first parent
-	Xp = X[0] + diffs
-
-	return Xp
+	# perform mutation according to DE eqaution
+	return X[0] + F[:, None] * (X[1] - X[2])
 
 
 def _dg_mutation(X, F, pop_mean: np.ndarray, dg_mode: DGMode):
@@ -26,41 +21,38 @@ def _dg_mutation(X, F, pop_mean: np.ndarray, dg_mode: DGMode):
 	# make sure F is a one-dimensional vector
 	F = np.ones(n_matings) * F
 
-	# the differentials from substraction the selected each pair
+	# calculate results of differential mutation for both diff options
 	result1 = X[0] + F[:, None] * (X[1] - X[2])
 	result2 = X[1] + F[:, None] * (X[2] - X[1])
 
-	dist_to_mid_1 = np.sum((result1 - pop_mean) ** 2, axis = 1)[:, None]
-	dist_to_mid_2 = np.sum((result2 - pop_mean) ** 2, axis = 1)[:, None]
+	dist_to_mean_1 = np.sum((result1 - pop_mean) ** 2, axis = 1)[:, None]
+	dist_to_mean_2 = np.sum((result2 - pop_mean) ** 2, axis = 1)[:, None]
 
-	choice1 = dist_to_mid_1 < dist_to_mid_2 if dg_mode == DGMode.EXPLOIT else dist_to_mid_1 < dist_to_mid_2
-	choice2 = choice1 != True
-
-	result = np.select([choice1, choice2], [result1, result2])
-	return result
+	# select mutation result according to current DG mode
+	choose1 = dist_to_mean_1 < dist_to_mean_2 if dg_mode == DGMode.EXPLOIT else dist_to_mean_1 < dist_to_mean_2
+	return np.select([choose1, choose1 == False], [result1, result2])
 
 
-def differential_crossover_and_mutation(pop, parents, F, CR, dg_controller: DGController, lower_bound, upper_bound,
-										at_least_once = True):
-	X = pop[parents.T].copy()
+def differential_crossover_and_mutation(population, parents, F, CR, dg_controller: DGController, lower_bound,
+										upper_bound, at_least_once = True):
+	X = population[parents.T].copy()
 	assert len(X.shape) == 3, "Please provide a three-dimensional matrix n_parents x pop_size x n_vars."
 
-	_, n_matings, n_var = X.shape
-
 	if dg_controller:
-		dg_mode = dg_controller.calculate_mode(pop, upper_bound, lower_bound)
-		Xp = _dg_mutation(X, F, dg_controller.pop_mean, dg_mode)
+		dg_mode = dg_controller.calculate_mode(population, upper_bound, lower_bound)
+		mutants = _dg_mutation(X, F, dg_controller.pop_mean, dg_mode)
 	else:
 		# prepare the out to be set
-		Xp = _differential_mutation(X, F)
+		mutants = _differential_mutation(X, F)
 
-	M = _binomial_crossover(n_matings, n_var, CR, at_least_once = at_least_once)
+	_, offspring_size, problem_dim = X.shape
+	cross_indices = _binomial_crossover(offspring_size, problem_dim, CR, at_least_once = at_least_once)
 
 	# take the first parents (this is already a copy)
 	X = X[0]
 
 	# set the corresponding values from the donor vector
-	X[M] = Xp[M]
+	X[cross_indices] = mutants[cross_indices]
 
 	return X
 
