@@ -17,7 +17,7 @@ def criterion_corr(X):
 	return -np.sum(np.tril(M, -1) ** 2)
 
 
-def sampling_lhs(n_samples, n_var, xl = 0, xu = 1, smooth = True, criterion = criterion_maxmin, n_iter = 50):
+def sampling_lhs(n_samples, n_var, xl = 0, xu = 1, smooth = True, criterion = criterion_corr, n_iter = 50):
 	X = sampling_lhs_unit(n_samples, n_var, smooth = smooth)
 
 	# if a criterion is selected to further improve the sampling
