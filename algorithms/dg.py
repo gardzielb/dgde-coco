@@ -29,12 +29,13 @@ class DGController:
 
 def __calculate_diversity__(population: np.ndarray, pop_mean: np.ndarray, lower_bound, upper_bound) -> float:
 	pop_size = len(population)
-	diag = np.linalg.norm(lower_bound - upper_bound)
-	coefficient = 1 / (pop_size + diag)
 
 	diffs = (population - pop_mean) ** 2
+	sums = np.sum(diffs)
+	diag = np.max(sums)
+	coefficient = 1 / (pop_size + diag)
 
-	sqrts = np.sqrt(np.sum(diffs))
+	sqrts = np.sqrt(sums)
 	total = np.sum(sqrts)
 	result = coefficient * total
 	return result
