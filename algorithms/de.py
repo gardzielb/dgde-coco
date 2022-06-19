@@ -1,4 +1,3 @@
-import random
 from typing import Callable, Optional
 
 import cocoex
@@ -17,7 +16,6 @@ class DE:
 				 CR = 0.5,
 				 F = 0.9,
 				 initial_population: np.ndarray | None = None,
-				 seed = None,
 				 dg_controller: Optional[DGController] = None
 				 ):
 		"""
@@ -35,12 +33,6 @@ class DE:
 		self.problem = problem
 		self.F = F
 		self.CR = CR
-		self.seed = seed
-		if self.seed is None:
-			self.seed = np.random.randint(0, 10000000)
-		# set the random seed for Python and Numpy methods
-		random.seed(self.seed)
-		np.random.seed(self.seed)
 
 		self.pop_size = pop_size
 		self.prev_pop_f = np.full((pop_size,), np.inf, dtype = float)

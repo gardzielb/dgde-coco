@@ -11,12 +11,12 @@ def minimize_de(problem: cocoex.Problem, x0: np.ndarray | None = None, pop_size:
 	run_de(de, gen_limit)
 
 
-def minimize_dgde(problem: cocoex.Problem, x0: np.ndarray | None = None, pop_size: int = 0, gen_limit = 20):
+def minimize_dgde(
+		div_low: float, div_high: float, problem: cocoex.Problem, x0: np.ndarray | None = None,
+		pop_size: int = 0, gen_limit = 20
+):
 	x0 = prepare_x0(problem, x0, pop_size)
-	de = DE(
-		problem, pop_size = len(x0), initial_population = x0,
-		dg_controller = DGController(div_low = 0.05, div_high = 0.25)
-	)
+	de = DE(problem, pop_size = len(x0), initial_population = x0, dg_controller = DGController(div_low, div_high))
 	run_de(de, gen_limit)
 
 

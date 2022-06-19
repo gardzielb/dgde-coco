@@ -7,6 +7,7 @@ import webbrowser  # to show post-processed results in the browser
 # experimentation and post-processing modules
 import cocoex
 import cocopp
+import numpy
 
 from algorithms.minimize import minimize_de, minimize_dgde
 
@@ -25,7 +26,7 @@ def create_observer(output_folder):
 
 alg_data = [
 	(minimize_de, 'DE'),
-	(minimize_dgde, 'DGDE')
+	(lambda *args, **kwargs: minimize_dgde(5e-6, 0.25, *args, **kwargs), 'DGDE')
 ]
 
 algorithms = [(minimize, create_observer(output_folder)) for minimize, output_folder in alg_data]
@@ -36,8 +37,9 @@ for minimize, observer in algorithms:
 	for problem in suite:  # this loop will take several minutes or longer
 		problem.observe_with(observer)  # generates the data for cocopp post-processing
 		# apply restarts while neither the problem is solved nor the budget is exhausted
-		while problem.evaluations < problem.dimension * budget_multiplier and not problem.final_target_hit:
-			minimize(problem, gen_limit = 1000, pop_size = 100)
+		for i in range(5):
+			numpy.random.seed(i + 1)
+			minimize(problem, gen_limit = 50 * problem.dimension, pop_size = 100)
 		minimal_print(problem, final = problem.index == len(suite) - 1)
 	pp_args += f' {observer.result_folder}'
 
