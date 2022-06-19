@@ -16,3 +16,10 @@ In project root directory run
 poetry install
 poetry run python <path to coco>/do.py run-python
 ```
+
+## Running experiments
+
+In project root directory run
+```
+poetry run python experiment.py
+```
