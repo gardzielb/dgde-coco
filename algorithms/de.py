@@ -1,3 +1,6 @@
+# This file contains modified code from Pymoo repository,
+# which is distributed according to license included in pymoo_license.txt file
+
 from typing import Callable, Optional
 
 import cocoex
