@@ -2,20 +2,40 @@ from enum import Enum
 
 import numpy as np
 
+
 class DGMode(Enum):
 	NONE = 0
 	EXPLORE = 1
 	EXPLOIT = 2
 
-def calculate_diversity(pop: np.ndarray, lower_bound, upper_bound) -> float:
-	pop_size = len(pop)
-	diag = np.linalg.norm(lower_bound - upper_bound)
+
+class DGController:
+	def __init__(self, div_low: float, div_high: float):
+		assert div_low <= div_high, "div_low must not be greater than div_high"
+		self.div_low = div_low
+		self.div_high = div_high
+		self.mode = DGMode.EXPLOIT
+		self.pop_mean = None
+
+	def calculate_mode(self, population: np.ndarray, lower_bound, upper_bound) -> DGMode:
+		self.pop_mean = np.mean(population, axis = 0)  # average population point
+		diversity = __calculate_diversity__(population, self.pop_mean, lower_bound, upper_bound)
+		if diversity < self.div_low:
+			self.mode = DGMode.EXPLORE
+		elif diversity > self.div_high:
+			self.mode = DGMode.EXPLOIT
+		return self.mode
+
+
+def __calculate_diversity__(population: np.ndarray, pop_mean: np.ndarray, lower_bound, upper_bound) -> float:
+	pop_size = len(population)
+
+	diffs = (population - pop_mean) ** 2
+	sums = np.sum(diffs)
+	diag = np.max(sums)
 	coefficient = 1 / (pop_size + diag)
 
-	s_mean = np.mean(pop, axis = 0) # average population point
-	diffs = (pop - s_mean) ** 2
-
-	sqrts = np.sqrt(np.sum(diffs))
+	sqrts = np.sqrt(sums)
 	total = np.sum(sqrts)
 	result = coefficient * total
 	return result

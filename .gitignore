@@ -212,6 +212,6 @@ dmypy.json
 cython_debug/
 
 # coco
-exdata/
-ppdata/
+exdata*/
+ppdata*/
 *.pydict
